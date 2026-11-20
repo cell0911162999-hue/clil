@@ -243,56 +243,74 @@ const Speech = (() => {
 })();
 
 /* ---------- Card playback ---------- */
+/* Built-in MP3 recordings play first: they sound the same on every device and also work
+   inside in-app browsers (LINE, Facebook) where speech synthesis is often silent.
+   Speech synthesis is only a fallback when a recording cannot play. */
 const notice = document.getElementById('speechNotice');
 function showNotice(msg){ notice.textContent = msg; notice.hidden = false; }
-if(!Speech.supported){
-  showNotice('This browser cannot read words aloud, so the page plays recordings instead. Chrome or Safari works best.');
-}
 
-const backup = new Audio();         // built-in recordings, used only when speech can't play
-backup.preload = 'auto';
+const player = new Audio();
+player.preload = 'auto';
 let playingCard = null;
-function clearPlaying(){ if(playingCard){ playingCard.classList.remove('playing'); playingCard = null; } }
+let playToken = 0;                  // bumps on every tap, so late events from an old tap are ignored
+let watchdog = 0;
+function clearWatchdog(){ if(watchdog){ clearTimeout(watchdog); watchdog = 0; } }
+function clearPlaying(){ clearWatchdog(); if(playingCard){ playingCard.classList.remove('playing'); playingCard = null; } }
 function markPlaying(card){ clearPlaying(); playingCard = card; card.classList.add('playing'); }
 function stopAll(){
+  playToken++;
   Speech.cancel();
-  try{ backup.pause(); }catch(e){}
+  try{ player.pause(); }catch(e){}
   clearPlaying();
 }
-function playBackup(w, card){
-  if(!AUDIO[w.id]) return clearPlaying();
-  try{ backup.pause(); }catch(e){}
-  backup.src = AUDIO[w.id];
-  backup.playbackRate = Speech.getRate() < 0.9 ? 0.8 : 1;
-  markPlaying(card);
-  const p = backup.play();
-  if(p && p.catch) p.catch(() => clearPlaying());
+/* If nothing starts making sound in time, stop the bouncing so the card never looks stuck. */
+function armWatchdog(token, ms, onTimeout){
+  clearWatchdog();
+  watchdog = setTimeout(() => { watchdog = 0; if(token === playToken) onTimeout(); }, ms);
 }
-backup.addEventListener('ended', clearPlaying);
-backup.addEventListener('error', clearPlaying);
+function noSound(){
+  clearPlaying();
+  showNotice('沒有聲音嗎？請把音量調大、關閉靜音模式；如果是用 LINE 開啟，請改用 Safari 或 Chrome。');
+}
 
-function speakWord(w, card){
-  stopAll();
-  const text = w.say || w.en;
-  if(!Speech.supported) return playBackup(w, card);
+function speakFallback(w, card, token){
+  if(token !== playToken) return;
+  try{ player.pause(); }catch(e){}
+  if(!Speech.supported) return noSound();
   markPlaying(card);
-  Speech.speak(text, {
-    onEnd: () => { if(playingCard === card) clearPlaying(); },
-    onError: code => {
-      if(playingCard === card) clearPlaying();
-      if(code === 'not-allowed' || code === 'synthesis-failed' || code === 'synthesis-unavailable' ||
-         code === 'audio-hardware' || code === 'voice-unavailable' || code === 'speak-failed' || code === 'error'){
-        showNotice('The voice is not working right now, so the page plays recordings instead.');
-        playBackup(w, card);
-      }
-    }
+  let started = false;
+  armWatchdog(token, 2500, () => { Speech.cancel(); noSound(); });
+  Speech.speak(w.say || w.en, {
+    onStart: () => { if(token === playToken){ started = true; clearWatchdog(); } },
+    onEnd: () => { if(token === playToken) started ? clearPlaying() : noSound(); },
+    onError: () => { if(token === playToken) noSound(); }
   });
+}
+
+function playWord(w, card){
+  stopAll();
+  const token = playToken;
+  const src = AUDIO[w.id];
+  if(!src) return speakFallback(w, card, token);
+  markPlaying(card);
+  let failed = false;
+  const fail = () => { if(failed || token !== playToken) return; failed = true; speakFallback(w, card, token); };
+  player.onplaying = () => { if(token === playToken) clearWatchdog(); };
+  player.onended = () => { if(token === playToken) clearPlaying(); };
+  player.onerror = fail;
+  armWatchdog(token, 3000, fail);
+  try{
+    player.src = src;                 // set and play inside the tap, so iOS allows it
+    player.currentTime = 0;
+    const p = player.play();
+    if(p && p.catch) p.catch(err => { if(!err || err.name !== 'AbortError') fail(); });
+  }catch(e){ fail(); }
 }
 
 const byId = Object.fromEntries(WORDS.map(w => [w.id, w]));
 function onCardClick(e){
   const card = e.target.closest('.card'); if(!card) return;
-  speakWord(byId[card.dataset.id], card);
+  playWord(byId[card.dataset.id], card);
 }
 list.addEventListener('click', onCardClick);
 
@@ -317,17 +335,11 @@ catBtns.forEach(b => b.addEventListener('click', () => {
   window.scrollTo({top:0, behavior:'smooth'});
 }));
 
-/* Cleanup: stop speech when the page is hidden or closed, and release listeners on unload. */
-function onHidden(){ if(document.visibilityState === 'hidden') stopAll(); }
-document.addEventListener('visibilitychange', onHidden);
-function teardown(){
-  stopAll();
-  Speech.destroy();
-  list.removeEventListener('click', onCardClick);
-  document.removeEventListener('visibilitychange', onHidden);
-  window.removeEventListener('pagehide', teardown);
-}
-window.addEventListener('pagehide', teardown);
+/* Stop sound when the page is hidden or left. Listeners stay attached, because iOS Safari and
+   Chrome can restore this page from the back/forward cache and the cards must still work. */
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') stopAll(); });
+window.addEventListener('pagehide', stopAll);
+window.addEventListener('pageshow', e => { if(e.persisted) stopAll(); });
 
 </script>
 </body>
