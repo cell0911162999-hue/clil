@@ -279,8 +279,69 @@ function markPlaying(card){ clearPlaying(); playingCard = card; card.classList.a
 function stopAll(){
   playToken++;
   Speech.cancel();
+  stopBuffer();
   try{ player.pause(); }catch(e){}
   clearPlaying();
+}
+
+/* ---------- Instant playback (Web Audio) ----------
+   Every recording is downloaded and decoded into memory when the page opens, so a tap starts the
+   sound at once instead of waiting for the <audio> player to load the file. Playback also skips the
+   short silence at the start of each recording. If Web Audio is missing or a recording is not ready
+   yet, the <audio> player below takes over, then speech synthesis. */
+const AC = window.AudioContext || window.webkitAudioContext;
+let ctx = null;
+try{ if(AC) ctx = new AC(); }catch(e){ ctx = null; }
+try{ if(ctx && navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}  // iOS 17+: play even in silent mode
+const buffers = {}, starts = {};
+let source = null;
+function stopBuffer(){
+  if(!source) return;
+  const s = source; source = null;
+  s.onended = null;
+  try{ s.stop(); }catch(e){}
+}
+function firstSound(buf){            // seconds of silence before the word begins
+  const d = buf.getChannelData(0), n = d.length;
+  for(let i = 0; i < n; i++) if(Math.abs(d[i]) > 0.005) return Math.max(0, i / buf.sampleRate - 0.03);  // keep 30 ms so soft sounds like f/s/ch are not cut
+  return 0;
+}
+function decode(ab){
+  return new Promise((ok, bad) => {  // callback form also works in older Safari
+    const p = ctx.decodeAudioData(ab, ok, bad);
+    if(p && p.then) p.then(ok, bad);
+  });
+}
+function loadBuffers(){
+  if(!ctx || !window.fetch) return;
+  Object.keys(AUDIO).forEach(id => {
+    fetch(AUDIO[id])
+      .then(r => { if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .then(decode)
+      .then(buf => { buffers[id] = buf; starts[id] = firstSound(buf); })
+      .catch(() => {});              // that word just uses the <audio> player instead
+  });
+}
+function playBuffer(w, card, token){
+  const buf = buffers[w.id];
+  if(!ctx || !buf) return false;
+  if(ctx.state !== 'running'){ try{ ctx.resume(); }catch(e){} }   // must happen inside the tap (iOS)
+  let s;
+  try{
+    s = ctx.createBufferSource();
+    s.buffer = buf;
+    s.connect(ctx.destination);
+    s.start(0, starts[w.id] || 0);
+  }catch(e){ return false; }
+  source = s;
+  markPlaying(card);
+  s.onended = () => { if(source === s){ source = null; if(token === playToken) clearPlaying(); } };
+  armWatchdog(token, 1500, () => {   // sound never started (audio still locked): use the <audio> player
+    if(ctx.state === 'running') return;
+    stopBuffer();
+    playFile(w, card, token);
+  });
+  return true;
 }
 /* If nothing starts making sound in time, stop the bouncing so the card never looks stuck. */
 function armWatchdog(token, ms, onTimeout){
@@ -309,6 +370,12 @@ function speakFallback(w, card, token){
 function playWord(w, card){
   stopAll();
   const token = playToken;
+  if(playBuffer(w, card, token)) return;
+  playFile(w, card, token);
+}
+
+function playFile(w, card, token){
+  if(token !== playToken) return;
   const src = AUDIO[w.id];
   if(!src) return speakFallback(w, card, token);
   markPlaying(card);
@@ -332,8 +399,9 @@ function playWord(w, card){
 /* Fetch every recording in the background once the page has loaded, so the first tap plays at once. */
 window.addEventListener('load', () => {
   setTimeout(() => {
+    if(ctx) return loadBuffers();
     if(!window.fetch) return;
-    Object.values(AUDIO).forEach(src => { if(src.indexOf('data:') !== 0) fetch(src).catch(() => {}); });
+    Object.values(AUDIO).forEach(src => { fetch(src).catch(() => {}); });
   }, 300);
 });
 
