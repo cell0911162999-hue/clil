@@ -67,6 +67,10 @@ h1 small{display:block;font-size:1rem;font-weight:600;color:var(--muted)}
 h1 .hint{display:block;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:600;color:var(--muted);margin-top:2px}
 .rate button[aria-pressed="true"]{background:var(--sun);color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
 .rate button[aria-pressed="false"] .ani{opacity:.5}
+.task{flex:1 1 320px;max-width:560px;display:flex;align-items:center;gap:12px;background:var(--sun);border:3px solid var(--ink);border-radius:18px;padding:10px 16px;margin:0}
+.task .tag{flex:none;background:var(--ink);color:#fff;font-family:var(--font-display);font-weight:800;font-size:1rem;line-height:1;padding:7px 12px;border-radius:999px}
+.task .en{display:block;font-family:var(--font-display);font-weight:800;font-size:clamp(1.1rem,3.2vw,1.35rem);line-height:1.15}
+.task .zh{display:block;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;font-weight:700;font-size:clamp(1rem,3vw,1.2rem);line-height:1.3}
 .notice{background:#FFF1C9;border:2px solid var(--ink);border-radius:12px;padding:8px 12px;font-size:.95rem;margin:0}
 .notice[hidden]{display:none}
 .card .spk{cursor:pointer;padding:0}
@@ -87,6 +91,11 @@ h1 .hint{display:block;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans
         </svg>
         <h1>Home Words<small class="hint">按一下圖片，就可以聽發音</small></h1>
       </header>
+      <!-- Task for students: change the two lines below to give a new instruction. -->
+      <p class="task" id="task">
+        <span class="tag">Task</span>
+        <span><span class="en">Pick one and act it out!</span><span class="zh">選一個，把它演出來</span></span>
+      </p>
     </div>
     <div class="cats" role="group" aria-label="Categories">
       <button class="cat" type="button" data-cat="app" aria-pressed="true"><span class="en">Appliances</span><span class="zh">家電</span></button>
