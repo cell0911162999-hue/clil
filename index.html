@@ -24,7 +24,7 @@ button,input{font-family:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 .wrap{max-width:1200px;margin:0 auto;padding:12px max(16px,env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:14px}
 .topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px;display:flex;flex-direction:column;gap:10px;border-bottom:3px solid rgba(31,45,61,.12)}
-.toprow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.toprow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .cats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .cat{border:3px solid var(--ink);border-radius:20px;background:var(--card);display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 12px;font-family:var(--font-display);font-weight:800;font-size:clamp(1.15rem,3.6vw,1.6rem);cursor:pointer;box-shadow:0 4px 0 var(--ink);touch-action:manipulation;min-height:64px}
 .cat:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
@@ -70,7 +70,7 @@ h1 .hint{display:block;font-family:var(--font-zh);font-size:clamp(.9rem,2.6vw,1.
 .rate button[aria-pressed="false"] .ani{opacity:.5}
 .task{flex:0 1 auto;display:flex;align-items:center;gap:12px;background:var(--sun);border:3px solid var(--ink);border-radius:18px;padding:10px 16px;margin:0}
 .task .tag{flex:none;background:var(--ink);color:#fff;font-family:var(--font-display);font-weight:800;font-size:1rem;line-height:1;padding:7px 12px;border-radius:999px}
-.mission{flex:1 1 320px;display:flex;align-items:stretch;justify-content:flex-end;gap:10px;position:relative}
+.mission{flex:1 1 320px;display:flex;flex-wrap:wrap;align-items:stretch;justify-content:flex-end;gap:10px}
 @media (max-width:1023px){.mission{justify-content:flex-start}.task{flex:1 1 auto}}
 @media (max-width:480px){.task{flex-direction:column;align-items:flex-start;gap:6px;padding:10px 14px}.task .tag{font-size:.9rem;padding:5px 10px}}
 /* Light bulb: tap to show the three planning hints */
@@ -86,9 +86,10 @@ h1 .hint{display:block;font-family:var(--font-zh);font-size:clamp(.9rem,2.6vw,1.
 .bulb.new .rays{animation:glow 1.4s ease-in-out infinite}
 @keyframes wiggle{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-12deg)}80%{transform:rotate(10deg)}90%{transform:rotate(-6deg)}}
 @keyframes glow{0%,100%{opacity:.15}50%{opacity:1}}
-.hints{position:absolute;top:calc(100% + 10px);right:0;z-index:20;margin:0;padding:12px;background:var(--card);border:3px solid var(--ink);border-radius:16px;box-shadow:0 6px 0 rgba(31,45,61,.25);display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:calc(100vw - 32px)}
+/* The hint bubble opens inside the header and pushes the cards down, so it never covers a picture */
+.hints{position:relative;flex:1 1 100%;margin:2px 0 0;padding:10px 12px;background:var(--card);border:3px solid var(--ink);border-radius:16px;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .hints[hidden]{display:none}
-.hints::before{content:"";position:absolute;top:-11px;right:26px;width:16px;height:16px;background:var(--card);border-left:3px solid var(--ink);border-top:3px solid var(--ink);transform:rotate(45deg)}
+.hints::before{content:"";position:absolute;top:-11px;right:30px;width:16px;height:16px;background:var(--card);border-left:3px solid var(--ink);border-top:3px solid var(--ink);transform:rotate(45deg)}
 .hints > span{color:#fff;border-radius:10px;padding:3px 10px;font-family:var(--font-display);font-weight:800;font-size:clamp(.9rem,2.4vw,1rem);line-height:1.35}
 .hints > span:nth-child(1){background:#E0533F}
 .hints > span:nth-child(2){background:#6A4FD0}
