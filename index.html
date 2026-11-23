@@ -6,14 +6,15 @@
 <title>Home Words</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Chiron+GoRound+TC:wght@700;900&display=swap" rel="stylesheet">
 <style>
 /* Layout idea: one scrolling page of big picture cards in two groups; tap a card = hear the word. Single bright theme on purpose. */
 :root{
   --bg:#E7F3F1; --ink:#1F2D3D; --card:#FFFFFF; --muted:#5D6B7A;
   --app:#2E7FD0; --app-soft:#DCEBFA; --furn:#D9792B; --furn-soft:#FBE7D3; --sun:#FFD35C;
   --font-display:"Baloo 2","Arial Rounded MT Bold",system-ui,sans-serif;
-  --font-body:"Baloo 2","PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
+  --font-zh:"Chiron GoRound TC","PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
+  --font-body:"Baloo 2",var(--font-zh);
   color-scheme:light;
 }
 *{box-sizing:border-box}
@@ -28,7 +29,7 @@ button,input{font-family:inherit;color:inherit}
 .cat{border:3px solid var(--ink);border-radius:20px;background:var(--card);display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 12px;font-family:var(--font-display);font-weight:800;font-size:clamp(1.15rem,3.6vw,1.6rem);cursor:pointer;box-shadow:0 4px 0 var(--ink);touch-action:manipulation;min-height:64px}
 .cat:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .cat{flex-direction:column;gap:0;line-height:1.1}
-.cat .zh{font-family:var(--font-body);font-size:clamp(1rem,3vw,1.3rem);font-weight:700;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif}
+.cat .zh{font-family:var(--font-body);font-size:clamp(1rem,3vw,1.3rem);font-weight:700;font-family:var(--font-zh)}
 .cat[data-cat="app"][aria-pressed="true"]{background:var(--app);color:#fff}
 .cat[data-cat="furn"][aria-pressed="true"]{background:var(--furn);color:#fff}
 header{display:flex;align-items:center;gap:12px}
@@ -60,22 +61,27 @@ h1 small{display:block;font-size:1rem;font-weight:600;color:var(--muted)}
 .controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .controls .label{font-weight:700}
 .rate{display:inline-flex;border:3px solid var(--ink);border-radius:999px;overflow:hidden;background:var(--card)}
-.rate button{border:0;background:transparent;padding:4px 14px;font-size:1.05rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif}
+.rate button{border:0;background:transparent;padding:4px 14px;font-size:1.05rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:var(--font-zh)}
 .rate .ani{width:32px;height:32px;display:block}
 .rate button{padding:4px 16px}
-.controls .label{font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif}
-h1 .hint{display:block;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:600;color:var(--muted);margin-top:2px}
+.controls .label{font-family:var(--font-zh)}
+h1 .hint{display:block;font-family:var(--font-zh);font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:700;color:var(--muted);margin-top:2px}
 .rate button[aria-pressed="true"]{background:var(--sun);color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
 .rate button[aria-pressed="false"] .ani{opacity:.5}
-.task{flex:1 1 320px;max-width:720px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;background:var(--sun);border:3px solid var(--ink);border-radius:18px;padding:10px 16px;margin:0}
+.task{flex:0 1 auto;display:flex;align-items:center;gap:12px;background:var(--sun);border:3px solid var(--ink);border-radius:18px;padding:10px 16px;margin:0}
 .task .tag{flex:none;background:var(--ink);color:#fff;font-family:var(--font-display);font-weight:800;font-size:1rem;line-height:1;padding:7px 12px;border-radius:999px}
-.task .hashes{margin-left:auto;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
-.task .hashes > span{background:rgba(31,45,61,.1);border-radius:8px;padding:1px 8px;font-family:var(--font-display);font-weight:800;font-size:clamp(.8rem,2.1vw,.9rem);line-height:1.35;white-space:nowrap}
-.task .hashes small{font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;font-weight:700;font-size:.95em;margin-left:4px;color:#3A4757}
-@media (max-width:1023px){.task .hashes{margin-left:0;flex-direction:row;flex-wrap:wrap;gap:4px 6px;width:100%}}
+.mission{flex:1 1 320px;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px 14px}
+/* Planning hashtags: printed on the page background, each in its own colour */
+.hashes{margin:0;display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.hashes > span{color:#fff;border-radius:10px;padding:2px 10px;font-family:var(--font-display);font-weight:800;font-size:clamp(.85rem,2.2vw,.95rem);line-height:1.35;white-space:nowrap}
+.hashes > span:nth-child(1){background:#E0533F}
+.hashes > span:nth-child(2){background:#6A4FD0}
+.hashes > span:nth-child(3){background:#16865A}
+.hashes small{font-family:var(--font-zh);font-weight:700;font-size:.95em;margin-left:5px}
+@media (max-width:1023px){.mission{justify-content:flex-start}.task{flex:1 1 100%}.hashes{flex-direction:row;flex-wrap:wrap;gap:5px 6px}}
 @media (max-width:599px){.topbar{position:static}}   /* phones: the header is tall now, so let it scroll away */
 .task .en{display:block;font-family:var(--font-display);font-weight:800;font-size:clamp(1.1rem,3.2vw,1.35rem);line-height:1.15}
-.task .zh{display:block;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;font-weight:700;font-size:clamp(1rem,3vw,1.2rem);line-height:1.3}
+.task .zh{display:block;font-family:var(--font-zh);font-weight:700;font-size:clamp(1rem,3vw,1.2rem);line-height:1.3}
 .notice{background:#FFF1C9;border:2px solid var(--ink);border-radius:12px;padding:8px 12px;font-size:.95rem;margin:0}
 .notice[hidden]{display:none}
 .card .spk{cursor:pointer;padding:0;z-index:2}
@@ -102,12 +108,14 @@ h1 .hint{display:block;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans
         <h1>Home Words<small class="hint">按一下圖片，就可以聽發音</small></h1>
       </header>
       <!-- Task for students: change the two lines below to give a new instruction. -->
-      <p class="task" id="task">
-        <span class="tag">Task</span>
-        <span><span class="en">Pick one and act it out!</span><span class="zh">選一個，把它演出來</span></span>
+      <div class="mission">
+        <p class="task" id="task">
+          <span class="tag">Task</span>
+          <span><span class="en">Pick one and act it out!</span><span class="zh">選一個，把它演出來</span></span>
+        </p>
         <!-- Planning reminders: the three things a good plan should include -->
-        <span class="hashes" aria-label="Remember"><span>#CompleteShape<small>完整造型</small></span><span>#ThreeLevels<small>三種水平</small></span><span>#FeaturesAndMovement<small>特色與動態</small></span></span>
-      </p>
+        <p class="hashes" aria-label="Remember"><span>#CompleteShape<small>完整造型</small></span><span>#ThreeLevels<small>三種水平</small></span><span>#FeaturesAndMovement<small>特色與動態</small></span></p>
+      </div>
     </div>
     <div class="cats" role="group" aria-label="Categories">
       <button class="cat" type="button" data-cat="app" aria-pressed="true"><span class="en">Appliances</span><span class="zh">家電</span></button>
