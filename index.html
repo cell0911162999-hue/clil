@@ -78,6 +78,7 @@ h1 .hint{display:block;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans
 .card .pic{position:relative}
 .card .got{position:absolute;right:6px;bottom:6px;width:clamp(38px,5.5vw,50px);height:clamp(38px,5.5vw,50px);pointer-events:none}
 .card .got svg{width:100%;height:100%;display:block}
+.card.bought .pic > svg{opacity:.35}   /* faded picture: already bought, no need to pick */
 .card .sub{font-size:.85rem;font-weight:600;color:var(--muted);margin-top:-2px}
 .tip{font-size:.95rem;color:var(--muted);text-align:center;margin:0}
 @media (prefers-reduced-motion:reduce){.card.playing .pic svg,.card.playing .spk{animation:none}}
@@ -183,7 +184,7 @@ const list = document.getElementById('list');
 function renderCards(){
   list.innerHTML = [currentCat].map(c=>
   `<div class="grid">`+
-  WORDS.filter(w=>w.cat===c).map(w=>`<div class="card" data-cat="${w.cat}" data-id="${w.id}">
+  WORDS.filter(w=>w.cat===c).map(w=>`<div class="card${w.bought ? ' bought' : ''}" data-cat="${w.cat}" data-id="${w.id}">
     <button class="spk" type="button" aria-label="Play ${w.en}${w.bought ? ' (already bought)' : ''}">${SPK}</button><span class="pic" aria-hidden="true">${PICS[w.id]}${w.bought ? `<span class="got">${GOT}</span>` : ''}</span>
     <span class="en">${w.en}</span></div>`).join('')+'</div>'
 ).join('');
