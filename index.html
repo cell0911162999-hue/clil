@@ -79,7 +79,14 @@ h1 .hint{display:block;margin-top:4px;font-family:var(--font-zh);font-size:clamp
 .card[data-cat="app"] .pic{background:var(--app-soft)}
 .card[data-cat="furn"] .pic{background:var(--furn-soft)}
 .card .pic > svg{width:80%;height:80%;pointer-events:none}
-.card .en{font-family:var(--font-display);font-weight:800;font-size:clamp(1.15rem,3.2vw,1.5rem);line-height:1.1;padding:0 2px 2px;overflow-wrap:anywhere}
+.card .en{display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--font-display);font-weight:800;font-size:clamp(1.15rem,3.2vw,1.5rem);line-height:1.1;padding:0 2px 2px;overflow-wrap:anywhere}
+/* Long words (13+ letters) get a slightly smaller size on phones so word + speaker fit on one line */
+.card .en.long{font-size:clamp(.98rem,2.9vw,1.5rem)}
+/* Small yellow speaker beside the word: shows the card can be heard */
+.card .say{flex:none;width:1.15em;height:1.15em;border-radius:50%;background:var(--sun);border:2px solid var(--ink);display:grid;place-items:center}
+.card .say svg{width:64%;height:64%;display:block}
+.card.playing .say{animation:pulse .5s ease-in-out infinite alternate}
+@keyframes pulse{from{transform:scale(1)}to{transform:scale(1.2)}}
 .card.playing{background:#FFF6D6;outline:4px solid var(--sun);outline-offset:2px}
 .card.playing .pic > svg{animation:bounce .5s ease-in-out infinite alternate}
 @keyframes bounce{from{transform:scale(1)}to{transform:scale(1.08) translateY(-3px)}}
@@ -94,7 +101,7 @@ h1 .hint{display:block;margin-top:4px;font-family:var(--font-zh);font-size:clamp
 .tip{margin:4px 0 0;text-align:center;font-family:var(--font-zh);font-weight:700;font-size:.9rem;color:var(--muted)}
 
 @media (max-height:500px) and (orientation:landscape){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.cats{position:static}}
-@media (prefers-reduced-motion:reduce){.card.playing .pic > svg,.bulb.new svg,.bulb.new .rays{animation:none}}
+@media (prefers-reduced-motion:reduce){.card.playing .say,.card.playing .pic > svg,.bulb.new svg,.bulb.new .rays{animation:none}}
 </style>
 </head>
 <body>
@@ -203,13 +210,14 @@ const WORDS = [
 let currentCat = 'app';
 
 const GOT = '<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="3" width="34" height="34" rx="8" fill="#fff" stroke="#1F2D3D" stroke-width="3"/><path d="M10 21 L17 28 L31 12" fill="none" stroke="#2FA866" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SAY = '<span class="say" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3z" fill="#1F2D3D"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="#1F2D3D" stroke-width="2.6" stroke-linecap="round"/></svg></span>';
 const list = document.getElementById('list');
 function renderCards(){
   list.innerHTML = [currentCat].map(c=>
   `<div class="grid">`+
   WORDS.filter(w=>w.cat===c).map(w=>`<button class="card${w.bought ? ' bought' : ''}" type="button" data-cat="${w.cat}" data-id="${w.id}" aria-label="${w.en}${w.bought ? ' (already bought)' : ''}">
     <span class="pic" aria-hidden="true">${PICS[w.id]}${w.bought ? `<span class="got">${GOT}</span>` : ''}</span>
-    <span class="en">${w.en}</span></button>`).join('')+'</div>'
+    <span class="en${w.en.length > 12 ? ' long' : ''}">${SAY}<span>${w.en}</span></span></button>`).join('')+'</div>'
 ).join('');
 }
 renderCards();
